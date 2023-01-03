@@ -1,7 +1,11 @@
 from shodan import Shodan
 from time import sleep
-from tqdm import tqdm
+from colorama import init as colorama_init
+from colorama import Fore
+from colorama import Style
 import argparse, requests, json, webbrowser
+
+colorama_init()
 
 parser = argparse.ArgumentParser(description="Hunt for infrastructure using Shodan and URLScan")
 parser.add_argument("-q", "--query", type=str, help="Shodan Query")
@@ -14,37 +18,32 @@ shodan_query = args.query
 urlscan_key = args.urlscan
 
 def urlscan_submission(url, urlscan_key):
-    # To stay under the anonymous quota but run indefinitely, do not exceed 1 submission per minute
-    # The URLscan page says you cannot run more than 2500 in a day
-    # 2500 / 1440 (per minute) < 1.7
-    # for authenticated, do not exceed 3 per minute
-    print("Submitting Result to URLScan and opening URLScan screenshot in browser")
-    if urlscan_key != None:
-        headers = {"API-Key": urlscan_key, "Content-Type": "application/json"}
-        wait = 20
-    else:
-        headers = {"Content-Type": "application/json"}
-        wait = 60
+    print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Submitting {url} and screenshot in browser if it has one")
+    headers = {"API-Key": urlscan_key, "Content-Type": "application/json"}
     data = {"url": url, "visibility": "public"}
     response = requests.post('https://urlscan.io/api/v1/scan/',headers=headers, data=json.dumps(data))
-    print(response)
-    # Putting the sleep up here becausse the submission takes some time to run
-    print(f"Sleeping {wait} seconds for quota")
-    sleep(wait)
+    if response.status_code == 429:
+        print("{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} We somehow exceeded an API limit. Quitting.")
+        quit()
+    # Putting the sleep up here because the submission takes some time to run
+    print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Sleeping for 20 seconds so URLScan has time to run and I do not exceed quota :)")
+    sleep(20)
     uuid = response.json()["uuid"]
     image_url = f"https://urlscan.io/screenshots/{uuid}.png"
-    print(f"{uuid}: {url}")
-    webbrowser.open(image_url)
+    image_request = requests.get(image_url)
+    if image_request.status_code == 200:
+        print(f"{Fore.GREEN}[RESULT]{Style.RESET_ALL} {url} | {image_url}")
+        webbrowser.open(image_url)
 
 def shodan_search(shodan_query, shodan_key, urlscan_key):
     api = Shodan(shodan_key)
     results_to_analyze = set()
-    for page_number in range(1, 2):
-        print(f"- Parsing Page {page_number}")
+    for page_number in range(1, 1337):
+        print(f"{Fore.LIGHTRED_EX}[SHODAN]{Style.RESET_ALL} Parsing Page {page_number}")
         results = api.search(query=shodan_query, page=page_number)
         number_of_results = len(results["matches"])
         if number_of_results == 0:
-            print("- Reached last page\n")
+            print(f"{Fore.LIGHTRED_EX}[SHODAN]{Style.RESET_ALL} Reached last page")
             break
         elif number_of_results > 0:
             for result in results["matches"]:
@@ -56,12 +55,6 @@ def shodan_search(shodan_query, shodan_key, urlscan_key):
                 results_to_analyze.add(url_tls)
     for url in results_to_analyze:
         urlscan_submission(url, urlscan_key)
-
-def urlscan_image_analysis():
-    pass
-
-def open_links_in_browser():
-    pass
 
 def main(shodan_query, shodan_key, urlscan_key):
     shodan_search(shodan_query=shodan_query, shodan_key=shodan_key, urlscan_key=urlscan_key)
