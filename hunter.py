@@ -18,7 +18,7 @@ shodan_query = args.query
 urlscan_key = args.urlscan
 
 def urlscan_submission(url, urlscan_key):
-    print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Submitting {url} and showing screenshot in browser if it has one")
+    print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Submitting {url} and showing screenshot in the browser if it has one")
     headers = {"API-Key": urlscan_key, "Content-Type": "application/json"}
     data = {"url": url, "visibility": "public"}
     response = requests.post('https://urlscan.io/api/v1/scan/',headers=headers, data=json.dumps(data))
