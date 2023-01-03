@@ -18,7 +18,7 @@ shodan_query = args.query
 urlscan_key = args.urlscan
 
 def urlscan_submission(url, urlscan_key):
-    print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Submitting {url} and screenshot in browser if it has one")
+    print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Submitting {url} and showing screenshot in browser if it has one")
     headers = {"API-Key": urlscan_key, "Content-Type": "application/json"}
     data = {"url": url, "visibility": "public"}
     response = requests.post('https://urlscan.io/api/v1/scan/',headers=headers, data=json.dumps(data))
@@ -38,14 +38,16 @@ def urlscan_submission(url, urlscan_key):
 def shodan_search(shodan_query, shodan_key, urlscan_key):
     api = Shodan(shodan_key)
     results_to_analyze = set()
+    total_results = 0
     for page_number in range(1, 1337):
-        print(f"{Fore.LIGHTRED_EX}[SHODAN]{Style.RESET_ALL} Parsing Page {page_number}")
+        print(f"{Fore.LIGHTRED_EX}[SHODAN]{Style.RESET_ALL} Parsing Page: {page_number}")
         results = api.search(query=shodan_query, page=page_number)
         number_of_results = len(results["matches"])
         if number_of_results == 0:
-            print(f"{Fore.LIGHTRED_EX}[SHODAN]{Style.RESET_ALL} Reached last page")
+            print(f"{Fore.LIGHTRED_EX}[SHODAN]{Style.RESET_ALL} Results Found: {total_results}")
             break
         elif number_of_results > 0:
+            total_results += number_of_results
             for result in results["matches"]:
                 ip = str(result["ip_str"])
                 port = str(result["port"])
