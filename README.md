@@ -11,6 +11,8 @@ Actively hunt for attacker infrastructure by filtering Shodan results with URLSc
 
 `python3 .\hunter.py -q "http.html:'titan stealer'" -s {Shodan API Key} -u {URLScan API Key}`
 
+![Usage Example](assets/usage.png)
+
 ## What do I do?
 
 1. Search Shodan with the query provided by `-q, --query`
