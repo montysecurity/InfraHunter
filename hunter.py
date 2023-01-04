@@ -1,9 +1,11 @@
 from shodan import Shodan
 from time import sleep
+from tqdm import tqdm
 from colorama import init as colorama_init
 from colorama import Fore
 from colorama import Style
-import argparse, requests, json, webbrowser
+from ratelimit import limits, sleep_and_retry
+import argparse, requests, json, webbrowser, hashlib, os
 
 colorama_init()
 
@@ -17,25 +19,63 @@ shodan_key = args.shodan
 shodan_query = args.query
 urlscan_key = args.urlscan
 
-def urlscan_submission(url, urlscan_key):
-    print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Submitting {url} and showing screenshot in the browser if it has one")
-    headers = {"API-Key": urlscan_key, "Content-Type": "application/json"}
-    data = {"url": url, "visibility": "public"}
-    response = requests.post('https://urlscan.io/api/v1/scan/',headers=headers, data=json.dumps(data))
-    if response.status_code == 429:
-        print("{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} We somehow exceeded an API limit. Quitting.")
-        quit()
-    # Putting the sleep up here because the submission takes some time to run
-    print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Sleeping for 20 seconds so URLScan has time to run and I do not exceed quota :)")
-    sleep(20)
-    uuid = response.json()["uuid"]
-    image_url = f"https://urlscan.io/screenshots/{uuid}.png"
-    image_request = requests.get(image_url)
-    if image_request.status_code == 200:
-        print(f"{Fore.GREEN}[RESULT]{Style.RESET_ALL} {url} | {image_url}")
-        webbrowser.open(image_url)
+uuids = {}
 
-def shodan_search(shodan_query, shodan_key, urlscan_key):
+def open_links(uuids):
+    count_of_uuids = len(uuids)
+    results = 0
+    print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} Analysing {count_of_uuids} URLs")
+    print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} This may take a while since I have to do a lot of hashing")
+    for uuid in uuids:
+        print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} Checking {uuid}")
+        infra_url = uuids[uuid]
+        image_url = f"https://urlscan.io/screenshots/{uuid}.png"
+        image_request = requests.get(image_url)
+        if image_request.status_code == 200:
+            with open("tmp.png", "wb") as f:
+                for block in image_request.iter_content(1024):
+                    if not block:
+                        break
+                    f.write(block)
+            with open("tmp.png", "rb") as f:
+                bytes = f.read()
+                sha256 = hashlib.sha256(bytes).hexdigest()
+            os.remove("tmp.png")
+            # If not a blank page
+            if sha256 != "8a8a7e22837dbbf5fae83d0a9306297166408cd8c72b3ec88668c4430310568b":
+                results += 1
+                print(f"{Fore.GREEN}[RESULT]{Style.RESET_ALL} {infra_url} | {image_url}")
+                webbrowser.open(image_url)
+
+@sleep_and_retry
+@limits(55, 60)
+@sleep_and_retry
+@limits(495, 3600)
+@sleep_and_retry
+@limits(4995, 86400)
+def urlscan_submission(url, urlscan_key, current_scan_type_position):
+    scan_types = [ "public", "unlisted", "private" ]
+    headers = {"API-Key": urlscan_key, "Content-Type": "application/json"}
+    data = {"url": url, "visibility": scan_types[current_scan_type_position] }
+    response = requests.post('https://urlscan.io/api/v1/scan/',headers=headers, data=json.dumps(data))
+    if response.status_code == 200:
+        print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Submitted {url}")
+    elif response.status_code == 429:
+        print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} We somehow exceeded an API limit for " + scan_types[current_scan_type_position] + " scans")
+        current_scan_type_position += 1
+        if current_scan_type_position == 3:
+            print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Used all available scans. Quitting.")
+            return 0
+        print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Switching to " + scan_types[current_scan_type_position])
+        return current_scan_type_position
+    else:
+        print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Encountered an unknown API error. Quitting.")
+        quit()
+    uuid = response.json()["uuid"]
+    uuids.update({uuid: url})
+    return 5
+
+def shodan_search(shodan_query, shodan_key, urlscan_key, current_scan_type_position):
     api = Shodan(shodan_key)
     results_to_analyze = set()
     total_results = 0
@@ -56,9 +96,20 @@ def shodan_search(shodan_query, shodan_key, urlscan_key):
                 results_to_analyze.add(url)
                 results_to_analyze.add(url_tls)
     for url in results_to_analyze:
-        urlscan_submission(url, urlscan_key)
+        urlscan_api = urlscan_submission(url, urlscan_key, current_scan_type_position)
+        if urlscan_api == 0:
+            quit()
+        if urlscan_api == 5:
+            continue
+        else:
+            current_scan_type_position = urlscan_api
 
 def main(shodan_query, shodan_key, urlscan_key):
-    shodan_search(shodan_query=shodan_query, shodan_key=shodan_key, urlscan_key=urlscan_key)
+    current_scan_type_position = 0
+    shodan_search(shodan_query=shodan_query, shodan_key=shodan_key, urlscan_key=urlscan_key, current_scan_type_position=current_scan_type_position)
+    print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} Sleeping for 2 minutes to let all of the scans run")
+    for i in tqdm(range(120)):
+        sleep(1)
+    open_links(uuids)
 
 main(shodan_query, shodan_key, urlscan_key)

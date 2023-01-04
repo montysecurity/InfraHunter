@@ -6,6 +6,7 @@ Actively hunt for attacker infrastructure by filtering Shodan results with URLSc
 
 - Shodan API Key
 - URLScan API Key
+- `python3 -m pip install -r requirements.txt`
 
 ## Usage Example
 
@@ -23,18 +24,6 @@ Actively hunt for attacker infrastructure by filtering Shodan results with URLSc
     - If it has an image, **open in the browser** (opens the URLScan link) and print result to the terminal
     - If not, move to next result
 
-## API Considerations
+## API Rate Limiting
 
-To be overly conservative with rate limits, it is rate limited to 1 request per 20 seconds. Keep in mind that the free Shodan account has a limit of 100 queries per month. In other words, I'd suggest using specific searches to avoid buring through API credits.
-
-### The Math
-
-I chose 1/20 req/sec based on simple math from the URLScan limit policy for an entire day.
-
-- URLScan Public Scan Limit Per Day = 5000
-- Minutes in a Day = 1440
-
-`5000/1440 = 3.5`
-- Do not exceed 3 scans per minute.
-
-- 60 seconds / 3 scans = 20 seconds / scan
+The builtin rate limits are for **authenticated** accounts and for URLScan. The tool uses ratelimit to manage requests but there is logic built in to handle HTTP 429 codes by switching the scan type. If all scan types are exhausted, the script quits.
