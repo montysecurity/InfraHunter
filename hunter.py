@@ -85,6 +85,9 @@ def shodan_search(shodan_query, shodan_key, urlscan_key, current_scan_type_posit
         number_of_results = len(results["matches"])
         if number_of_results == 0:
             print(f"{Fore.LIGHTRED_EX}[SHODAN]{Style.RESET_ALL} Results Found: {total_results}")
+            if page_number == 1:
+                print(f"{Fore.LIGHTRED_EX}[SHODAN]{Style.RESET_ALL} Quitting")
+                quit()
             break
         elif number_of_results > 0:
             total_results += number_of_results
