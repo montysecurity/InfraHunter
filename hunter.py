@@ -29,6 +29,7 @@ def open_links(uuids):
     for uuid in uuids:
         print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} Checking {uuid}")
         infra_url = uuids[uuid]
+        info_url = f"https://urlscan.io/result/{uuid}/"
         image_url = f"https://urlscan.io/screenshots/{uuid}.png"
         image_request = requests.get(image_url)
         if image_request.status_code == 200:
@@ -44,8 +45,8 @@ def open_links(uuids):
             # If not a blank page
             if sha256 != "8a8a7e22837dbbf5fae83d0a9306297166408cd8c72b3ec88668c4430310568b":
                 results += 1
-                print(f"{Fore.GREEN}[RESULT]{Style.RESET_ALL} {infra_url} | {image_url}")
-                webbrowser.open(image_url)
+                print(f"{Fore.GREEN}[RESULT]{Style.RESET_ALL} {infra_url} | {info_url} ")
+                webbrowser.open(info_url)
 
 @sleep_and_retry
 @limits(55, 60)
