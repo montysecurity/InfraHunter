@@ -4,7 +4,6 @@ from tqdm import tqdm
 from colorama import init as colorama_init
 from colorama import Fore
 from colorama import Style
-from ratelimit import limits, sleep_and_retry
 import argparse, requests, json, webbrowser, hashlib, os
 
 colorama_init()
@@ -48,17 +47,12 @@ def open_links(uuids):
                 print(f"{Fore.GREEN}[RESULT]{Style.RESET_ALL} {infra_url} | {info_url} ")
                 webbrowser.open(info_url)
 
-@sleep_and_retry
-@limits(55, 60)
-@sleep_and_retry
-@limits(495, 3600)
-@sleep_and_retry
-@limits(4995, 86400)
 def urlscan_submission(url, urlscan_key, current_scan_type_position):
     scan_types = [ "public", "unlisted", "private" ]
     headers = {"API-Key": urlscan_key, "Content-Type": "application/json"}
     data = {"url": url, "visibility": scan_types[current_scan_type_position] }
     response = requests.post('https://urlscan.io/api/v1/scan/',headers=headers, data=json.dumps(data))
+    sleep(20)
     if response.status_code == 200:
         print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Submitted {url}")
     elif response.status_code == 429:
