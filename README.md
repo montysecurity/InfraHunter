@@ -26,4 +26,4 @@ Actively hunt for attacker infrastructure by filtering Shodan results with URLSc
 
 ## API Rate Limiting
 
-The builtin rate limits are for **authenticated** accounts and for URLScan. The tool uses ratelimit to manage requests but there is logic built in to handle HTTP 429 codes by switching the scan type. If all scan types are exhausted, the script quits.
+The builtin rate limits are for **authenticated** accounts and for URLScan. The tool uses ratelimit to manage requests but there is logic built in to handle HTTP 429 codes by quitting the script. Specify what URLScan scan type to use with `--scan-type`

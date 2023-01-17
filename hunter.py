@@ -12,15 +12,20 @@ parser = argparse.ArgumentParser(description="Hunt for infrastructure using Shod
 parser.add_argument("-q", "--query", type=str, help="Shodan Query")
 parser.add_argument("-s", "--shodan", type=str, help="Shodan API Key")
 parser.add_argument("-u", "--urlscan", type=str, help="URLScan API Key")
+parser.add_argument("--scan-type", type=str, default="public", help="URL Scan Type (default: Public")
+parser.add_argument("--no-browser", action="store_true", help="Do not open a browser")
 
 args = parser.parse_args()
 shodan_key = args.shodan
 shodan_query = args.query
 urlscan_key = args.urlscan
+no_browser = args.no_browser
+scan_type = args.scan_type
 
 uuids = {}
 
 def open_links(uuids):
+    current_links = []
     count_of_uuids = len(uuids)
     results = 0
     print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} Analysing {count_of_uuids} URLs")
@@ -45,24 +50,23 @@ def open_links(uuids):
             if sha256 != "8a8a7e22837dbbf5fae83d0a9306297166408cd8c72b3ec88668c4430310568b":
                 results += 1
                 print(f"{Fore.GREEN}[RESULT]{Style.RESET_ALL} {infra_url} | {info_url} ")
-                webbrowser.open(info_url)
+                if not no_browser:
+                    current_links.append(info_url)
+    print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} Opening {len(current_links)} links found")
+    if not no_browser:
+        for link in current_links:
+            webbrowser.open(link)
 
-def urlscan_submission(url, urlscan_key, current_scan_type_position):
-    scan_types = [ "public", "unlisted", "private" ]
+def urlscan_submission(url, urlscan_key):
     headers = {"API-Key": urlscan_key, "Content-Type": "application/json"}
-    data = {"url": url, "visibility": scan_types[current_scan_type_position] }
+    data = {"url": url, "visibility": scan_type }
     response = requests.post('https://urlscan.io/api/v1/scan/',headers=headers, data=json.dumps(data))
     sleep(20)
     if response.status_code == 200:
         print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Submitted {url}")
     elif response.status_code == 429:
-        print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} We somehow exceeded an API limit for " + scan_types[current_scan_type_position] + " scans")
-        current_scan_type_position += 1
-        if current_scan_type_position == 3:
-            print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Used all available scans. Quitting.")
-            return 0
-        print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Switching to " + scan_types[current_scan_type_position])
-        return current_scan_type_position
+        print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} We exceeded an API limit for {scan_type} scans. Quitting.")
+        quit()
     else:
         print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Encountered an unknown API error. Quitting.")
         quit()
@@ -70,7 +74,7 @@ def urlscan_submission(url, urlscan_key, current_scan_type_position):
     uuids.update({uuid: url})
     return 5
 
-def shodan_search(shodan_query, shodan_key, urlscan_key, current_scan_type_position):
+def shodan_search(shodan_query, shodan_key, urlscan_key):
     api = Shodan(shodan_key)
     results_to_analyze = set()
     total_results = 0
@@ -94,17 +98,14 @@ def shodan_search(shodan_query, shodan_key, urlscan_key, current_scan_type_posit
                 results_to_analyze.add(url)
                 results_to_analyze.add(url_tls)
     for url in results_to_analyze:
-        urlscan_api = urlscan_submission(url, urlscan_key, current_scan_type_position)
+        urlscan_api = urlscan_submission(url, urlscan_key)
         if urlscan_api == 0:
             quit()
         if urlscan_api == 5:
             continue
-        else:
-            current_scan_type_position = urlscan_api
 
 def main(shodan_query, shodan_key, urlscan_key):
-    current_scan_type_position = 0
-    shodan_search(shodan_query=shodan_query, shodan_key=shodan_key, urlscan_key=urlscan_key, current_scan_type_position=current_scan_type_position)
+    shodan_search(shodan_query=shodan_query, shodan_key=shodan_key, urlscan_key=urlscan_key)
     print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} Sleeping for 2 minutes to let all of the scans run")
     for i in tqdm(range(120)):
         sleep(1)
