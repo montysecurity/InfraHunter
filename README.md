@@ -21,9 +21,8 @@ Actively hunt for attacker infrastructure by filtering Shodan results with URLSc
     - If it has multiple open ports, all ports will be submitted
     - Submits *http* and *https* URLs
 3. Check URLScan for an image from each submission
-    - If it has an image, **open in the browser** (opens the URLScan link) and print result to the terminal
-    - If not, move to next result
+    - For all results that have an image that is not blank, open the URLScan page for that result in the browser (unless `--no-browser` is provided)
 
 ## API Rate Limiting
 
-The builtin rate limits are for **authenticated** accounts and for URLScan. The tool uses ratelimit to manage requests but there is logic built in to handle HTTP 429 codes by quitting the script. Specify what URLScan scan type to use with `--scan-type`
+The tool is harcoded to sleep 20 seconds between URLScan submissions to be nice. By default it uses public scans, this can be changed with `--scan-type`.
