@@ -67,12 +67,12 @@ def urlscan_submission(url, urlscan_key):
         uuid = response.json()["uuid"]
         uuids.update({uuid: url})
     elif response.status_code == 429:
-        print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} We exceeded an API limit for {scan_type} scans. Quitting.")
+        print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} We exceeded an API limit for {scan_type} scans")
         quit()
     elif response.status_code == 400:
         print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Failed to scan {url}")
     else:
-        print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Encountered an unknown API error. Moving on.")
+        print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Encountered an unknown API error")
     return 5
 
 def shodan_search(shodan_query, shodan_key, urlscan_key):
