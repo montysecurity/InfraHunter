@@ -63,7 +63,7 @@ def urlscan_submission(url, urlscan_key):
     response = requests.post('https://urlscan.io/api/v1/scan/',headers=headers, data=json.dumps(data))
     sleep(20)
     if response.status_code == 200:
-        print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Submitted {url}")
+        print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Scanning {url}")
         uuid = response.json()["uuid"]
         uuids.update({uuid: url})
     elif response.status_code == 429:
