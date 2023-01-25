@@ -97,6 +97,13 @@ def shodan_search(shodan_query, shodan_key, urlscan_key):
                 url_tls = f"https://{ip}:{port}"
                 results_to_analyze.add(url)
                 results_to_analyze.add(url_tls)
+                domains = result["hostnames"]
+                if len(domains) > 0:
+                    for domain in domains:
+                        url = f"http://{domain}:{port}"
+                        url_tls = f"https://{domain}:{port}"
+                        results_to_analyze.add(url)
+                        results_to_analyze.add(url_tls)
     for url in results_to_analyze:
         urlscan_api = urlscan_submission(url, urlscan_key)
         if urlscan_api == 0:
