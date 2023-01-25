@@ -20,7 +20,8 @@ Actively hunt for attacker infrastructure by filtering Shodan results with URLSc
 2. For each IP, submit it to URLScan
     - If it has multiple open ports, all ports will be submitted
     - Submits *http* and *https* URLs
-3. Check URLScan for an image from each submission
+3. Same process for all domains
+4. Check URLScan for an image from each submission
     - For all results that have an image that is not blank, open the URLScan page for that result in the browser (unless `--no-browser` is provided)
 
 ## API Rate Limiting
