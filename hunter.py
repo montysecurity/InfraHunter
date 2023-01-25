@@ -67,9 +67,10 @@ def urlscan_submission(url, urlscan_key):
     elif response.status_code == 429:
         print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} We exceeded an API limit for {scan_type} scans. Quitting.")
         quit()
+    elif response.status_code == 400:
+        print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Failed to scan {url}")
     else:
-        print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Encountered an unknown API error. Quitting.")
-        quit()
+        print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Encountered an unknown API error. Moving on.")
     uuid = response.json()["uuid"]
     uuids.update({uuid: url})
     return 5
