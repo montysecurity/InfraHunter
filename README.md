@@ -8,11 +8,17 @@ Actively hunt for attacker infrastructure by filtering Shodan results with URLSc
 - URLScan API Key
 - `python3 -m pip install -r requirements.txt`
 
-## Usage Example
+## Usage Examples
 
 `python3 .\hunter.py -q "http.html:'titan stealer'" -s {Shodan API Key} -u {URLScan API Key}`
 
 ![Usage Example](assets/usage.png)
+
+### Builtin Queries
+
+You can also use pre-built queries by supplying their name with `-q`. To list all builtin queries, run `python .\hunter.py -l`.
+
+`python3 .\hunter.py -s {Shodan API Key} -u {URLScan API Key} -q google-phishing-http-title`
 
 ## What do I do?
 

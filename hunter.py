@@ -14,6 +14,7 @@ parser.add_argument("-s", "--shodan", type=str, help="Shodan API Key")
 parser.add_argument("-u", "--urlscan", type=str, help="URLScan API Key")
 parser.add_argument("--scan-type", type=str, default="public", help="URL Scan Type (default: Public")
 parser.add_argument("--no-browser", action="store_true", help="Do not open a browser")
+parser.add_argument("-l", "--list-builtin", action="store_true", help="List Pre-built Shodan Queries")
 
 args = parser.parse_args()
 shodan_key = args.shodan
@@ -21,8 +22,23 @@ shodan_query = args.query
 urlscan_key = args.urlscan
 no_browser = args.no_browser
 scan_type = args.scan_type
+list_builtin = args.list_builtin
 
 uuids = {}
+
+buitin_searches = {
+    "google-phishing-http-title": "http.title:Google,Gmail http.title:Login port:443,80 -http.html:'with Google'",
+    "google-phishing-favicon-hash": "http.favicon.hash:708578229 port:80,443 200 http.title:Login,Signin",
+    "microsoft-phishing-http-title": "http.title:Microsoft http.title:Login port:80,443 '200 OK' -http.html:'with Microsoft'" 
+}
+
+if list_builtin:
+    for name in buitin_searches:
+        print(f"Name: {name}")
+        print("Shodan Query: " + str(buitin_searches[name]))
+        print()
+    quit()
+
 
 def open_links(uuids):
     current_links = []
@@ -76,6 +92,8 @@ def urlscan_submission(url, urlscan_key):
     return 5
 
 def shodan_search(shodan_query, shodan_key, urlscan_key):
+    if shodan_query in buitin_searches:
+        shodan_query = buitin_searches[shodan_query]
     api = Shodan(shodan_key)
     results_to_analyze = set()
     total_results = 0
