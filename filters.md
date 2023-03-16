@@ -6,4 +6,4 @@ This is a live document containing search filters I have found at least slightly
 - `http.title:'Directory listing for' http.html:cs4.4`
 - `http.title:'Directory listing for' http.html:cobaltstrike`
 - `http.title:'Directory listing for' http.html:log4shell`
-- `http.title:"Directory listing for" http.html:cve-2022`
+- `http.title:'Directory listing for' http.html:cve-2022`

@@ -29,7 +29,12 @@ uuids = {}
 buitin_searches = {
     "google-phishing-http-title": "http.title:Google,Gmail http.title:Login port:443,80 -http.html:'with Google'",
     "google-phishing-favicon-hash": "http.favicon.hash:708578229 port:80,443 200 http.title:Login,Signin",
-    "microsoft-phishing-http-title": "http.title:Microsoft http.title:Login port:80,443 '200 OK' -http.html:'with Microsoft'" 
+    "microsoft-phishing-http-title": "http.title:Microsoft http.title:Login port:80,443 '200 OK' -http.html:'with Microsoft'",
+    "opendir-powershell-1": "http.title:'Directory listing for' http.html:ps1",
+    "opendir-cobalt-strike-1": "http.title:'Directory listing for' http.html:cs4.4",
+    "opendir-cobalt-strike-2": "http.title:'Directory listing for' http.html:cobaltstrike",
+    "opendir-log4shell": "http.title:'Directory listing for' http.html:log4shell",
+    "opendir-cve-2022": "http.title:'Directory listing for' http.html:cve-2022"
 }
 
 if list_builtin:
