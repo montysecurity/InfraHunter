@@ -33,7 +33,7 @@ buitin_searches = {
     "opendir-powershell-1": "http.title:'Directory listing for' http.html:ps1",
     "opendir-cobalt-strike-1": "http.title:'Directory listing for' http.html:cs4.4",
     "opendir-cobalt-strike-2": "http.title:'Directory listing for' http.html:cobaltstrike",
-    "opendir-log4shell": "http.title:'Directory listing for' http.html:log4shell",
+    "opendir-log4shell-1": "http.title:'Directory listing for' http.html:log4shell",
     "opendir-cve-2022": "http.title:'Directory listing for' http.html:cve-2022"
 }
 
