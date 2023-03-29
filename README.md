@@ -20,6 +20,10 @@ You can also use pre-built queries by supplying their name with `-q`. To list al
 
 `python3 .\hunter.py -s {Shodan API Key} -u {URLScan API Key} -q google-phishing-http-title`
 
+### Discord
+
+You can also provide a URL to a Discord webhook with `-d, --discord`. This will send the results to that webhook instead of opening them in a browser.
+
 ## What do I do?
 
 1. Search Shodan with the query provided by `-q, --query`
@@ -33,3 +37,7 @@ You can also use pre-built queries by supplying their name with `-q`. To list al
 ## API Rate Limiting
 
 The tool is harcoded to sleep 20 seconds between URLScan submissions to be nice. By default it uses public scans, this can be changed with `--scan-type`.
+
+## TODO
+
+- Filter out 4XX, 5XX responses from URLScan
