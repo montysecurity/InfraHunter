@@ -8,3 +8,4 @@ This is a live document containing search filters I have found at least slightly
 - `http.title:'Directory listing for' http.html:log4shell`
 - `http.title:'Directory listing for' http.html:cve-2022`
 - `"http.html:'files have been encrypted'"`
+- `http.title:stealer http.html:login`
