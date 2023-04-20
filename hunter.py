@@ -69,8 +69,10 @@ def open_links(uuids):
         infra_url = uuids[uuid]
         info_url = f"https://urlscan.io/result/{uuid}/"
         image_url = f"https://urlscan.io/screenshots/{uuid}.png"
+        result_url = f"https://urlscan.io/api/v1/result/{uuid}"
+        result_request = requests.get(result_url)
         image_request = requests.get(image_url)
-        if image_request.status_code == 200:
+        if image_request.status_code == 200 and result_request.status_code == 200:
             with open("tmp.png", "wb") as f:
                 for block in image_request.iter_content(1024):
                     if not block:
@@ -82,6 +84,14 @@ def open_links(uuids):
             os.remove("tmp.png")
             # If not a blank page
             if sha256 != "8a8a7e22837dbbf5fae83d0a9306297166408cd8c72b3ec88668c4430310568b":
+                response_codes = []
+                result_request = json.loads(result_request.text)
+                # This is to remove any 4XX, 5XX responses
+                for request_response in result_request["data"]["requests"]:
+                    response_code = int(request_response["response"]["response"]["status"])
+                    response_codes.append(response_code)
+                if 200 not in response_codes:
+                    continue
                 results += 1
                 print(f"{Fore.GREEN}[RESULT]{Style.RESET_ALL} {infra_url} | {info_url} ")
                 current_links.append(info_url)
@@ -147,7 +157,11 @@ def shodan_search(shodan_query, shodan_key, urlscan_key):
     print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} Results Found: {total_results}")
     print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} URLs to Analyze: {urls_to_analyze}")
     for url in results_to_analyze:
-        urlscan_api = urlscan_submission(url, urlscan_key)
+        try:
+            urlscan_api = urlscan_submission(url, urlscan_key)
+        except:
+            print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Failed to scan {url}")
+            continue
         if urlscan_api == 0:
             quit()
         if urlscan_api == 5:
