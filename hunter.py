@@ -88,7 +88,10 @@ def open_links(uuids):
                 result_request = json.loads(result_request.text)
                 # This is to remove any 4XX, 5XX responses
                 for request_response in result_request["data"]["requests"]:
-                    response_code = int(request_response["response"]["response"]["status"])
+                    try:
+                        response_code = int(request_response["response"]["response"]["status"])
+                    except KeyError:
+                        continue
                     response_codes.append(response_code)
                 if 200 not in response_codes:
                     continue
@@ -101,9 +104,10 @@ def open_links(uuids):
             webbrowser.open(link)
             sleep(20)
     elif no_browser:
-        if not discord is None:
+        if discord is not None:
             for link in current_links:
                 DiscordWebhook(url=discord, content=link).execute()
+                sleep(1)
 
 def urlscan_submission(url, urlscan_key):
     headers = {"API-Key": urlscan_key, "Content-Type": "application/json"}
