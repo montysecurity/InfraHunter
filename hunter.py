@@ -47,6 +47,10 @@ buitin_searches = {
     "opendir-cobalt-strike-2": "http.title:'Directory listing for' http.html:cobaltstrike",
     "opendir-log4shell-1": "http.title:'Directory listing for' http.html:log4shell",
     "opendir-cve-2022": "http.title:'Directory listing for' http.html:cve-2022",
+    "opendir-cve-2023": "http.title:'Directory listing for' http.html:cve-2023",
+    "opendir-exe": "http.title:'Directory listing for' http.html:exe",
+    "opendir-docx": "http.title:'Directory listing for' http.html:docx",
+    "opendir-bat": "http.title:'Directory listing for' http.html:bat",
     "generic-ransomware-1": "http.html:'files have been encrypted'",
     "generic-infostealer-1": "http.title:stealer http.html:login"
 }
