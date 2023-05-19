@@ -37,7 +37,3 @@ You can also provide a URL to a Discord webhook with `-d, --discord`. This will 
 ## API Rate Limiting
 
 The tool is harcoded to sleep 20 seconds between URLScan submissions to be nice. By default it uses public scans, this can be changed with `--scan-type`.
-
-## TODO
-
-- Filter out 4XX, 5XX responses from URLScan
