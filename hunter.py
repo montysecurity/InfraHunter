@@ -194,9 +194,12 @@ def main(shodan_query, shodan_key, urlscan_key):
             print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} Missing Shodan Query")
             return
         shodan_search(shodan_query=shodan_query, shodan_key=shodan_key, urlscan_key=urlscan_key)
-    print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} Sleeping for 2 minutes to let all of the scans run")
-    for i in tqdm(range(120)):
-        sleep(1)
-    open_links(uuids)
+    if len(uuids) > 0:
+        print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} Sleeping for 2 minutes to let all of the scans run")
+        for i in tqdm(range(120)):
+            sleep(1)
+        open_links(uuids)
+    else:
+        print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} Sleeping for 2 minutes to let all of the scans run")
 
 main(shodan_query, shodan_key, urlscan_key)
