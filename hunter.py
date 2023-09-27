@@ -29,6 +29,10 @@ list_builtin = args.list_builtin
 auto_all = args.auto_all
 discord = args.discord
 
+hashes_to_exclude = [
+    "8a8a7e22837dbbf5fae83d0a9306297166408cd8c72b3ec88668c4430310568b" # Blank page
+]
+
 if discord is not None:
     if "https" in discord:
         no_browser = True
@@ -64,6 +68,7 @@ def list_all():
 
 def open_links(uuids):
     current_links = []
+    hashes = []
     count_of_uuids = len(uuids)
     results = 0
     print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} Analysing {count_of_uuids} URLs")
@@ -87,7 +92,7 @@ def open_links(uuids):
                 sha256 = hashlib.sha256(bytes).hexdigest()
             os.remove("tmp.png")
             # If not a blank page
-            if sha256 != "8a8a7e22837dbbf5fae83d0a9306297166408cd8c72b3ec88668c4430310568b":
+            if sha256 not in hashes_to_exclude:
                 response_codes = []
                 result_request = json.loads(result_request.text)
                 # This is to remove any 4XX, 5XX responses
@@ -100,8 +105,9 @@ def open_links(uuids):
                 if 200 not in response_codes:
                     continue
                 results += 1
-                print(f"{Fore.GREEN}[RESULT]{Style.RESET_ALL} {infra_url} | {info_url} ")
+                print(f"{Fore.GREEN}[RESULT]{Style.RESET_ALL} {infra_url} | {info_url}")
                 current_links.append(info_url)
+                hashes.append(sha256)
     print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} Opening {len(current_links)} links found")
     if not no_browser:
         for link in current_links:
@@ -109,9 +115,13 @@ def open_links(uuids):
             sleep(20)
     elif no_browser:
         if discord is not None:
+            i = 0
             for link in current_links:
-                DiscordWebhook(url=discord, content=link).execute()
+                sha256 = hashes[i]
+                message = f"Link: {str(link)}\nSHA256: {str(sha256)}"
+                DiscordWebhook(url=discord, content=message).execute()
                 sleep(1)
+                i += 1
 
 def urlscan_submission(url, urlscan_key):
     headers = {"API-Key": urlscan_key, "Content-Type": "application/json"}
@@ -199,7 +209,5 @@ def main(shodan_query, shodan_key, urlscan_key):
         for i in tqdm(range(120)):
             sleep(1)
         open_links(uuids)
-    else:
-        print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} Sleeping for 2 minutes to let all of the scans run")
 
 main(shodan_query, shodan_key, urlscan_key)
