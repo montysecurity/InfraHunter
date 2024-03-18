@@ -16,7 +16,7 @@ Actively hunt for attacker infrastructure by filtering Shodan results with URLSc
 
 ### Builtin Queries
 
-You can also use pre-built queries by supplying their name with `-q`. To list all builtin queries, run `python .\hunter.py -l`.
+You can use pre-built queries by supplying their name with `-q`. To list all builtin queries, run `python .\hunter.py -l`.
 
 `python3 .\hunter.py -s {Shodan API Key} -u {URLScan API Key} -q google-phishing-http-title`
 
@@ -27,12 +27,16 @@ You can also provide a URL to a Discord webhook with `-d, --discord`. This will 
 ## What do I do?
 
 1. Search Shodan with the query provided by `-q, --query`
-2. For each IP, submit it to URLScan
+2. For each combination of IP/port/protocol and domain/port/protocol, submit it to URLScan
     - If it has multiple open ports, all ports will be submitted
     - Submits *http* and *https* URLs
-3. Same process for all domains
-4. Check URLScan for an image from each submission
-    - For all results that have an image that is not blank, open the URLScan page for that result in the browser (unless `--no-browser` is provided)
+    - Same process for all domains
+3. For each URLScan
+    - Check to see if the page scanned returned a HTTP OK (200)
+    - Check to see if it has an screenshot of the web page in the URLScan results
+    - Download the image and calculate its SHA256 and delete the image
+    - Check the SHA256 against a list of hashes to exclude (this list is stuff I have deemed non-malicious but plan on making a way to bypass this check) (the list exists because I use this tool to hunt on a schedule)
+    - For each remaining result not excluded by the hash check, return the result
 
 ## API Rate Limiting
 
