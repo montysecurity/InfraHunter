@@ -128,9 +128,10 @@ def open_links(uuids):
         info_url = f"https://urlscan.io/result/{uuid}/"
         image_url = f"https://urlscan.io/screenshots/{uuid}.png"
         result_url = f"https://urlscan.io/api/v1/result/{uuid}"
+        info_request = requests.get(info_url)
         result_request = requests.get(result_url)
         image_request = requests.get(image_url)
-        if image_request.status_code == 200 and result_request.status_code == 200:
+        if image_request.status_code == 200 and result_request.status_code == 200 and "We could not scan this website!" not in info_request.text:
             with open("tmp.png", "wb") as f:
                 for block in image_request.iter_content(1024):
                     if not block:
@@ -219,7 +220,7 @@ def shodan_search(shodan_query, shodan_key, urlscan_key):
                     results_to_analyze.add(url_tls)
     except KeyboardInterrupt:
         print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} Received a KeyboardInterrupt")
-        quit()
+        exit()
     urls_to_analyze = len(results_to_analyze)
     print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} Results Found: {total_results}")
     print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} URLs to Analyze: {urls_to_analyze}")
