@@ -143,7 +143,6 @@ def open_links(uuids):
                 bytes = f.read()
                 sha256 = hashlib.sha256(bytes).hexdigest()
             os.remove("tmp.png")
-            # If not a blank page
             if sha256 not in hashes_to_exclude:
                 response_codes = []
                 result_request = json.loads(result_request.text)
@@ -178,12 +177,8 @@ def open_links(uuids):
 def urlscan_submission(url, urlscan_key):
     headers = {"API-Key": urlscan_key, "Content-Type": "application/json"}
     data = {"url": url, "visibility": scan_type }
-    response = requests.post('https://urlscan.io/api/v1/scan/',headers=headers, data=json.dumps(data))
-    try:
-        sleep(20)
-    except KeyboardInterrupt:
-        print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} Received a KeyboardInterrupt")
-        quit()
+    response = requests.post("https://urlscan.io/api/v1/scan/", headers=headers, data=json.dumps(data))
+    sleep(20)
     if response.status_code == 200:
         print(f"{Fore.MAGENTA}[URLSCAN]{Style.RESET_ALL} Scanning {url}")
         uuid = response.json()["uuid"]
@@ -204,25 +199,21 @@ def shodan_search(shodan_query, shodan_key, urlscan_key):
     results_to_analyze = set()
     total_results = 0
     print(f"{Fore.LIGHTRED_EX}[SHODAN]{Style.RESET_ALL} Search: {shodan_query}")
-    try:
-        for result in api.search_cursor(shodan_query):
-            total_results += 1
-            ip = str(result["ip_str"])
-            port = str(result["port"])
-            url = f"http://{ip}:{port}"
-            url_tls = f"https://{ip}:{port}"
-            results_to_analyze.add(url)
-            results_to_analyze.add(url_tls)
-            domains = result["hostnames"]
-            if len(domains) > 0:
-                for domain in domains:
-                    url = f"http://{domain}:{port}"
-                    url_tls = f"https://{domain}:{port}"
-                    results_to_analyze.add(url)
-                    results_to_analyze.add(url_tls)
-    except KeyboardInterrupt:
-        print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} Received a KeyboardInterrupt")
-        exit()
+    for result in api.search_cursor(shodan_query):
+        total_results += 1
+        ip = str(result["ip_str"])
+        port = str(result["port"])
+        url = f"http://{ip}:{port}"
+        url_tls = f"https://{ip}:{port}"
+        results_to_analyze.add(url)
+        results_to_analyze.add(url_tls)
+        domains = result["hostnames"]
+        if len(domains) > 0:
+            for domain in domains:
+                url = f"http://{domain}:{port}"
+                url_tls = f"https://{domain}:{port}"
+                results_to_analyze.add(url)
+                results_to_analyze.add(url_tls)
     urls_to_analyze = len(results_to_analyze)
     print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} Results Found: {total_results}")
     print(f"{Fore.BLUE}[INFRAHUNTER]{Style.RESET_ALL} URLs to Analyze: {urls_to_analyze}")
